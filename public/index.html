@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Página Web</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <img src="multimedia/jdm.png" alt="Logo" class="logo">
+    </header>
+    <form id="formulario">
+ <h1>Gestor de Autos</h1>
+ 
+    <input type="hidden" id="id">
+    <input type="text" id="marca" placeholder="Marca" required>
+    <input type="text" id="modelo" placeholder="Modelo" required>
+    <input type="number" id="anio" placeholder="Año" required>
+    <button type="submit">Guardar</button>
+    <h2>Lista de autos</h2>
+    <ul id="lista"></ul>
+  </form>
+
+
+
+  <script>
+    const API = '/api/autos';
+    const lista = document.getElementById('lista');
+    const form = document.getElementById('formulario');
+
+    async function cargar() {
+      lista.innerHTML = '';
+      const res = await fetch(API);
+      const datos = await res.json();
+      datos.forEach(auto => {
+        const li = document.createElement('li');
+        li.innerHTML = `${auto.marca} ${auto.modelo} (${auto.anio})
+          <button onclick="editar(${auto.id})">Editar</button>
+          <button onclick="eliminar(${auto.id})">Eliminar</button>`;
+        lista.appendChild(li);
+      });
+    }
+
+    form.onsubmit = async e => {
+      e.preventDefault();
+      const id = document.getElementById('id').value;
+      const auto = {
+        marca: document.getElementById('marca').value,
+        modelo: document.getElementById('modelo').value,
+        anio: parseInt(document.getElementById('anio').value)
+      };
+      if (id) {
+        await fetch(`${API}/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(auto)
+        });
+      } else {
+        await fetch(API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(auto)
+        });
+      }
+      form.reset();
+      cargar();
+    };
+
+    async function editar(id) {
+      const res = await fetch(`${API}/${id}`);
+      const auto = await res.json();
+      document.getElementById('id').value = auto.id;
+      document.getElementById('marca').value = auto.marca;
+      document.getElementById('modelo').value = auto.modelo;
+      document.getElementById('anio').value = auto.anio;
+    }
+
+    async function eliminar(id) {
+      await fetch(`${API}/${id}`, { method: 'DELETE' });
+      cargar();
+    }
+
+    cargar();
+  </script>
+    <!-- Body -->
+    <main>
+
+      <br><br>
+      <p>Aquí tienes un enlace a un video sobre un nissan Skyline R34:</p>
+      <a href="https://www.youtube.com/watch?v=HNBjGo73FXs" target="_blank">Ver video</a>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>Curso: Conceptualización de servicios en la nube</p>
+      <p>Nombre: Jose David Custodio Vega</p>
+      <p>Código: 212029217</p>
+      <p>Correo: jose.custodio@udgvirtual.udg.mx</p>
+    </footer>
+  </div>
+</body>
+</html>
